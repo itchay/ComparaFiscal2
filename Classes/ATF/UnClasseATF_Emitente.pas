@@ -1,0 +1,113 @@
+unit UnClasseATF_Emitente;
+
+interface
+
+uses
+  UnClasseUtils;
+
+type
+  TATF_Emitente = class(TObject)
+  private
+    iID: integer;
+    sNomeEmpresa: String;
+    sCNPJ: String;
+    sInscricaoEstadual: String;
+    sUF: String;
+
+  public
+    property ID: integer
+      read iID
+      write iID;
+
+    property NomeEmpresa: String
+      read sNomeEmpresa
+      write sNomeEmpresa;
+
+    property CNPJ: String
+      read sCNPJ
+      write sCNPJ;
+
+    property InscricaoEstadual: String
+      read sInscricaoEstadual
+      write sInscricaoEstadual;
+
+    property UF: String
+      read sUF
+      write sUF;
+
+    constructor Create();
+
+    function salvar(lIdATF: integer): boolean;
+    procedure excluir(lIdATF: integer);
+  end;
+
+implementation
+
+uses
+  System.SysUtils, UnConstantes, IBQuery, UnClassePool_BD_IB;
+
+{ TATF_Emitente }
+
+constructor TATF_Emitente.Create;
+begin
+  inherited Create();
+  iID := 0;
+  sNomeEmpresa := '';
+  sInscricaoEstadual:= '';
+  sCNPJ:= '';
+  sUF:= '';
+end;
+
+function TATF_Emitente.salvar(lIdATF: integer): boolean;
+var
+  i: Integer;
+  query1, query2: TIBQuery;
+begin
+  Result := false;
+  query1 := PoolDeConexoes.getConexao(_BD_COMPARA_FISCAL).createNewQuery;
+  try
+    with query1 do
+    begin
+        SQL.Text:= ' INSERT INTO ATF_EMITENTE(RAZAO_SOCIAL,' +
+                              '               CNPJ,' +
+                              '               INSCRICAO_ESTADUAL,' +
+                              '               SIGLA_UF,' +
+                              '               ID_ATF)' +
+                   ' VALUES (' + QuotedStr(self.sNomeEmpresa) + ',' +
+                   '         ' + QuotedStr(self.sCNPJ) + ',' +
+                   '         ' + QuotedStr(self.sInscricaoEstadual) + ',' +
+                   '         ' + QuotedStr(self.sUF) + ',' +
+                   '         ' + QuotedStr(IntToStr(lIdATF)) + ')';
+
+        ExecSQL;
+        Transaction.Commit;
+        Close;
+
+        Result := true;
+    end;
+
+  finally
+    FreeAndNil(query1);
+  end;
+end;
+
+procedure TATF_Emitente.excluir(lIdATF: integer);
+var
+  query: TIBQuery;
+begin
+  query := PoolDeConexoes.getConexao(_BD_COMPARA_FISCAL).createNewQuery;
+  try
+    with query do
+    begin
+      SQL.Text := ' DELETE FROM ATF_EMITENTE e' +
+                  ' WHERE e.id_atf = ' + QuotedStr(IntToStr(lIdATF));
+      ExecSQL;
+      Transaction.Commit;
+      Close;
+    end;
+  finally
+    FreeAndNil(query);
+  end;
+end;
+
+end.

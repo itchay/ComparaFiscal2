@@ -1,0 +1,153 @@
+unit UnClasseATF_Emitente;
+
+interface
+
+uses
+  UnClasseUtils;
+
+type
+  TATF_Emitente = class(TObject)
+  private
+    iID: integer;
+    sNomeEmpresa: String;
+    sCNPJ: String;
+    sInscricaoEstadual: String;
+    sUF: String;
+
+  public
+    property ID: integer
+      read iID
+      write iID;
+
+    property NomeEmpresa: String
+      read sNomeEmpresa
+      write sNomeEmpresa;
+
+    property CNPJ: String
+      read sCNPJ
+      write sCNPJ;
+
+    property InscricaoEstadual: String
+      read sInscricaoEstadual
+      write sInscricaoEstadual;
+
+    property UF: String
+      read sUF
+      write sUF;
+
+    constructor Create();
+
+    function ToString: String; override;
+    function salvar(lIdSPED: integer): boolean;
+    procedure excluir(lIdSPED: integer);
+  end;
+
+implementation
+
+uses
+  System.SysUtils, UnConstantes, IBQuery, UnClassePool_BD_IB;
+
+{ TATF_Emitente }
+
+constructor TATF_Emitente.Create;
+begin
+  inherited Create();
+  iID := 0;
+  sNomeEmpresa := '';
+  sInscricaoEstadual:= '';
+  sCNPJ:= '';
+  sUF:= '';
+end;
+
+function TATF_Emitente.ToString: String;
+begin
+  Result:= '|' + sRegistro +
+           '|' + completaComZeros(True, fCodigoVersaoLeiaute, 3) +
+           '|' + IntToStr(fCodigoFinalidadeArquivo) +
+           '|' + fDataInicial +
+           '|' + fDataFinal +
+           '|' + fNomeEmpresa +
+           '|' + sCNPJ +
+           '|' + fCPF +
+           '|' + sUF +
+           '|' + fInscricaoEstadual +
+           '|' + sCod_Mun +
+           '|' + sIM +
+           '|' + sSUFRAMA +
+           '|' + sInd_Perfil +
+           '|' + sInd_Ativ + '|';
+end;
+
+function TATF_Emitente.salvar(lIdSPED: integer): boolean;
+var
+  i: Integer;
+  query1, query2: TIBQuery;
+begin
+  Result := false;
+  query1 := PoolDeConexoes.getConexao(_BD_COMPARA_FISCAL).createNewQuery;
+  try
+    with query1 do
+    begin
+        SQL.Text:= ' INSERT INTO R0000_EMITENTE(CODIGO_FINALIDADE,' +
+                              '       CODIGO_VERSAO,' +
+                              '       DATA_INICIAL,' +
+                              '       DATA_FINAL,' +
+                              '       NOME_EMPRESA,' +
+                              '       CNPJ,' +
+                              '       INSCRICAO_ESTADUAL,' +
+                              '       UF,' +
+                              '       COD_MUN,' +
+                              '       SUFRAMA,' +
+                              '       IND_ATIV,' +
+                              '       CPF,' +
+                              '       INSCRICAO_MUNICIPAL,' +
+                              '       IND_PERFIL,' +
+                              '       ID_SPED)' +
+                   ' VALUES (' + QuotedStr(IntToStr(self.fCodigoFinalidadeArquivo)) + ',' +
+                   '         ' + QuotedStr(Self.fCodigoVersaoLeiaute) + ',' +
+                   '         ' + QuotedStr(converteFormatoDataBD(self.fDataInicial)) + ',' +
+                   '         ' + QuotedStr(converteFormatoDataBD(self.fDataFinal)) + ',' +
+                   '         ' + QuotedStr(self.fNomeEmpresa) + ',' +
+                   '         ' + QuotedStr(self.sCNPJ) + ',' +
+                   '         ' + QuotedStr(self.fInscricaoEstadual) + ',' +
+                   '         ' + QuotedStr(self.sUF) + ',' +
+                   '         ' + QuotedStr(self.sCod_Mun) + ',' +
+                   '         ' + QuotedStr(self.sSUFRAMA) + ',' +
+                   '         ' + QuotedStr(self.sInd_Ativ) + ',' +
+                   '         ' + QuotedStr(self.fCPF) + ',' +
+                   '         ' + QuotedStr(self.sIM) + ',' +
+                   '         ' + QuotedStr(self.sInd_Perfil) + ',' +
+                   '         ' + QuotedStr(IntToStr(lIdSPED)) + ')';
+
+        ExecSQL;
+        Transaction.Commit;
+        Close;
+
+        Result := true;
+    end;
+
+  finally
+    FreeAndNil(query1);
+  end;
+end;
+
+procedure TATF_Emitente.excluir(lIdSPED: integer);
+var
+  query: TIBQuery;
+begin
+  query := PoolDeConexoes.getConexao(_BD_COMPARA_FISCAL).createNewQuery;
+  try
+    with query do
+    begin
+      SQL.Text := ' DELETE FROM R0000_EMITENTE e' +
+                  ' WHERE e.id_sped = ' + QuotedStr(IntToStr(lIdSPED));
+      ExecSQL;
+      Transaction.Commit;
+      Close;
+    end;
+  finally
+    FreeAndNil(query);
+  end;
+end;
+
+end.

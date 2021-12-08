@@ -1,0 +1,457 @@
+﻿unit UnClasseRegistroC100_Notas;
+
+interface
+
+uses
+  Generics.Collections;
+  //UnClasseRegistro, Generics.Collections, UnClasseRegistroC170, UnClasseRegistroC190;
+
+type
+  // Nota Fiscal (C�digo 01), Nota Fiscal Avulsa (C�digo 1B),
+  // Nota Fiscal de Produtor (C�digo 04) e NF-e (C�digo 55)
+  TRegistroC100 = class (TObject)
+    private
+      sRegistro,
+      sInd_Oper,
+      sInd_Emit,
+      sCod_Part,
+      sCod_Mod,
+      sCod_Sit,
+      sSer,
+      sNum_Doc,
+      sChv_Nfe,
+      sDt_Doc,
+      sDt_E_S,
+      sVl_Doc,
+      sInd_Pgto,
+      sVl_Desc,
+      sVl_Abat_Nt,
+      sVl_Merc,
+      sInd_Frt,
+      sVl_Frt,
+      sVl_Seg,
+      sVl_Out_Da,
+      sVl_BC_ICMS,
+      sVl_ICMS,
+      sVl_Bc_ICMS_ST,
+      sVl_ICMS_ST,
+      sVl_IPI,
+      sVl_PIS,
+      sVl_COFINS,
+      sVl_PIS_ST,
+      sVl_COFINS_ST: String;
+      sNumeroEntrada: String;
+      //oListaRegistrosC170: TObjectList<TRegistroC170>;
+      //oListaRegistrosC190: TObjectList<TRegistroC190>;
+
+      //procedure setCod_Mod(lCod_Mod: String);
+      //procedure setChv_Nfe(lChv_Nfe: String);
+
+      const
+        _TAMANHO_REG = 04;
+        _TAMANHO_IND_OPER = 01;
+        _TAMANHO_EMIT = 01;
+        _TAMANHO_COD_MOD = 02;
+        _TAMANHO_COD_SIT = 02;
+        _TAMANHO_CHV_NFE = 44;
+        _TAMANHO_IND_PGTO = 01;
+        _TAMANHO_IND_FRT = 01;
+
+    public
+
+      property Registro: String
+        read sRegistro
+        write sRegistro;
+
+      property Ind_Oper: String
+        read sInd_Oper
+        write sInd_Oper;
+
+      property Ind_Emit: String
+        read sInd_Emit
+        write sInd_Emit;
+
+      property Cod_Part: String
+        read sCod_Part
+        write sCod_Part;
+
+      property Cod_Mod: String
+        read sCod_Mod
+        write sCod_Mod;
+
+      property Cod_Sit: String
+        read sCod_Sit
+        write sCod_Sit;
+
+      property Ser: String
+        read sSer
+        write sSer;
+
+      property Num_Doc: String
+        read sNum_Doc
+        write sNum_Doc;
+
+      property Chv_Nfe: String
+        read sChv_Nfe
+        write sChv_Nfe;
+
+      property Dt_E_S: String
+        read sDt_E_S
+        write sDt_E_S;
+
+      property Dt_Doc: String
+        read sDt_Doc
+        write sDt_Doc;
+
+      property Vl_Doc: String
+        read sVl_Doc
+        write sVl_Doc;
+
+      property Ind_Pgto: String
+        read sInd_Pgto
+        write sInd_Pgto;
+
+      property Vl_Desc: String
+        read sVl_Desc
+        write sVl_Desc;
+
+      property Vl_Abat_Nt: String
+        read sVl_Abat_Nt
+        write sVl_Abat_Nt;
+
+      property Vl_Merc: String
+        read sVl_Merc
+        write sVl_Merc;
+
+      property Ind_Frt: String
+        read sInd_Frt
+        write sInd_Frt;
+
+      property Vl_Frt: String
+        read sVl_Frt
+        write sVl_Frt;
+
+      property Vl_Seg: String
+        read sVl_Seg
+        write sVl_Seg;
+
+      property Vl_Out_Da: String
+        read sVl_Out_Da
+        write sVl_Out_Da;
+
+      property Vl_BC_ICMS: String
+        read sVl_BC_ICMS
+        write sVl_BC_ICMS;
+
+      property Vl_ICMS: String
+        read sVl_ICMS
+        write sVl_ICMS;
+
+      property Vl_BC_ICMS_ST: String
+        read sVl_Bc_ICMS_ST
+        write sVl_Bc_ICMS_ST;
+
+      property Vl_ICMS_ST: String
+        read sVl_ICMS_ST
+        write sVl_ICMS_ST;
+
+      property Vl_IPI: String
+        read sVl_IPI
+        write sVl_IPI;
+
+      property Vl_PIS: String
+        read sVl_PIS
+        write sVl_PIS;
+
+      property Vl_COFINS: String
+        read sVl_COFINS
+        write sVl_COFINS;
+
+      property Vl_PIS_ST: String
+        read sVl_PIS_ST
+        write sVl_PIS_ST;
+
+      property Vl_COFINS_ST: String
+        read sVl_COFINS_ST
+        write sVl_COFINS_ST;
+
+      property NumeroEntrada: String
+        read sNumeroEntrada
+        write sNumeroEntrada;
+
+      //property ListaRegistrosC170: TObjectList<TRegistroC170>
+        //read oListaRegistrosC170;
+
+      //property ListaRegistrosC190: TObjectList<TRegistroC190>
+        //read oListaRegistrosC190;
+
+      function ToString: String; override;
+      function salvar(lIdSPED: integer): boolean;
+      function listar(lIdSped: string): TObjectList<TRegistroC100>;
+      procedure excluir(lIdSPED: integer);
+
+      constructor Create();
+  end;
+
+implementation
+
+uses UnClasseUtils, System.SysUtils, UnConstantes, IBQuery, UnClassePool_BD_IB, Dialogs;
+
+{ TRegistroC100 }
+
+constructor TRegistroC100.Create;
+begin
+  inherited Create();
+  sRegistro:= 'C100';
+  sInd_Oper:= '';
+  sInd_Emit:= '';
+  sCod_Part:= '';
+  sCod_Mod:= '';
+  sCod_Sit:= '';
+  sSer:= '0';
+  sNum_Doc:= '0';
+  sChv_Nfe:= '';
+  sDt_Doc:= '';
+  sDt_E_S:= '';
+  sVl_Doc:= '0';
+  sInd_Pgto:= '';
+  sVl_Desc:= '0';
+  sVl_Abat_Nt:= '0';
+  sVl_Merc:= '0';
+  sInd_Frt:= '';
+  sVl_Frt:= '0';
+  sVl_Seg:= '0';
+  sVl_Out_Da:= '0';
+  sVl_BC_ICMS:= '0';
+  sVl_ICMS:= '0';
+  sVl_BC_ICMS_ST:= '0';
+  sVl_ICMS_ST:= '0';
+  sVl_IPI:= '0';
+  sVl_PIS:= '0';
+  sVl_COFINS:= '0';
+  sVl_PIS_ST:= '0';
+  sVl_COFINS_ST:= '0';
+  //oListaRegistrosC170:= TObjectList<TRegistroC170>.Create();
+  //oListaRegistrosC190:= TObjectList<TRegistroC190>.Create();
+end;
+
+function TRegistroC100.ToString: String;
+begin
+  Result:= '|' + sRegistro + '|' + sInd_Oper + '|' + sInd_Emit + '|' + sCod_Part +
+           '|' + sCod_Mod + '|' + sCod_Sit + '|' + sSer + '|' + sNum_Doc +
+           '|' + sChv_Nfe + '|' + sDt_Doc + '|' + Dt_E_S + '|' + sVl_Doc +
+           '|' + sInd_Pgto + '|' + sVl_Desc + '|' + sVl_Abat_Nt +
+           '|' + sVl_Merc + '|' + sInd_Frt + '|' + sVl_Frt + '|' + sVl_Seg +
+           '|' + sVl_Out_Da + '|' + sVl_BC_ICMS + '|' + sVl_ICMS +
+           '|' + sVl_Bc_ICMS_ST + '|' + sVl_ICMS_ST + '|' + sVl_IPI +
+           '|' + sVl_PIS + '|' + sVl_COFINS + '|' + sVl_PIS_ST +
+           '|' + sVl_COFINS_ST + '|';
+end;
+
+function TRegistroC100.salvar(lIdSPED: integer): boolean;
+var
+  i: Integer;
+  query1, query2: TIBQuery;
+begin
+  Result := false;
+  query1 := PoolDeConexoes.getConexao(_BD_COMPARA_FISCAL).createNewQuery;
+
+  if self.sSer = '' then
+    self.sSer := '0';
+
+  try
+    try
+       with query1 do
+       begin
+          SQL.Text:= ' INSERT INTO RC100_NOTAS(IND_OPER,' +
+                     '                  IND_EMIT,' +
+                     '                  COD_PART,' +
+                     '                  COD_MOD,' +
+                     '                  COD_SIT,' +
+                     '                  SER,' +
+                     '                  NUM_DOC,' +
+                     '                  CHV_NFE,' +
+                     '                  DT_DOC,' +
+                     '                  DT_E_S,' +
+                     '                  VL_DOC,' +
+                     '                  IND_PGTO,' +
+                     '                  VL_DESC,' +
+                     '                  VL_ABAT_NT,' +
+                     '                  VL_MERC,' +
+                     '                  IND_FRT,' +
+                     '                  VL_FRT,' +
+                     '                  VL_SEG,' +
+                     '                  VL_OUT_DA,' +
+                     '                  VL_BC_ICMS,' +
+                     '                  VL_ICMS,' +
+                     '                  VL_BC_ICMS_ST,' +
+                     '                  VL_ICMS_ST,' +
+                     '                  VL_IPI,' +
+                     '                  VL_PIS,' +
+                     '                  VL_COFINS,' +
+                     '                  VL_PIS_ST,' +
+                     '                  VL_COFINS_ST,' +
+                     '                  ID_SPED)' +
+                     ' VALUES (' + QuotedStr(self.sInd_Oper) + ',' +
+                     '         ' + QuotedStr(self.sInd_Emit) + ',' +
+                     '         ' + QuotedStr(self.sCod_Part) + ',' +
+                     '         ' + QuotedStr(self.sCod_Mod) + ',' +
+                     '         ' + QuotedStr(self.sCod_Sit) + ',' +
+                     '         ' + QuotedStr(self.sSer) + ',' +
+                     '         ' + QuotedStr(self.sNum_Doc) + ',' +
+                     '         ' + QuotedStr(self.sChv_Nfe) + ',' +
+                     '         ' + QuotedStr(self.sDt_Doc) + ',' +
+                     '         ' + QuotedStr(self.sDt_E_S) + ',' +
+                     '         ' + QuotedStr(formataFloatParaBanco(self.sVl_Doc)) + ',' +
+                     '         ' + QuotedStr(self.sInd_Pgto) + ',' +
+                     '         ' + QuotedStr(formataFloatParaBanco(self.sVl_Desc)) + ',' +
+                     '         ' + QuotedStr(formataFloatParaBanco(self.sVl_Abat_Nt)) + ',' +
+                     '         ' + QuotedStr(formataFloatParaBanco(self.sVl_Merc)) + ',' +
+                     '         ' + QuotedStr(self.sInd_Frt) + ',' +
+                     '         ' + QuotedStr(formataFloatParaBanco(self.sVl_Frt)) + ',' +
+                     '         ' + QuotedStr(formataFloatParaBanco(self.sVl_Seg)) + ',' +
+                     '         ' + QuotedStr(formataFloatParaBanco(self.sVl_Out_Da)) + ',' +
+                     '         ' + QuotedStr(formataFloatParaBanco(self.sVl_BC_ICMS)) + ',' +
+                     '         ' + QuotedStr(formataFloatParaBanco(self.sVl_ICMS)) + ',' +
+                     '         ' + QuotedStr(formataFloatParaBanco(self.sVl_BC_ICMS_ST)) + ',' +
+                     '         ' + QuotedStr(formataFloatParaBanco(self.sVl_ICMS_ST)) + ',' +
+                     '         ' + QuotedStr(formataFloatParaBanco(self.sVl_IPI)) + ',' +
+                     '         ' + QuotedStr(formataFloatParaBanco(self.sVl_PIS)) + ',' +
+                     '         ' + QuotedStr(formataFloatParaBanco(self.sVl_COFINS)) + ',' +
+                     '         ' + QuotedStr(formataFloatParaBanco(self.sVl_PIS_ST)) + ',' +
+                     '         ' + QuotedStr(formataFloatParaBanco(self.sVl_COFINS_ST)) + ',' +
+                     '         ' + QuotedStr(IntToStr(lIdSPED)) + ')';
+
+          ExecSQL;
+          Transaction.Commit;
+          Close;
+
+          Result := true;
+       end;
+    except
+      on E : Exception do
+      begin
+        showmessage('Registro C100 Não Inserido no BD:' + self.sChv_Nfe + ' Num Doc:' + self.sNum_Doc + #13 + E.Message);
+      end;
+    end;
+
+  finally
+    FreeAndNil(query1);
+  end;
+end;
+
+function TRegistroC100.listar(lIdSped: string): TObjectList<TRegistroC100>;
+var
+  auxC100: TRegistroC100;
+  i: Integer;
+  query: TIBQuery;
+  ini, fim: string;
+begin
+  query := PoolDeConexoes.getConexao(_BD_COMPARA_FISCAL).createNewQuery;
+  Result:= TObjectList<TRegistroC100>.Create();
+  try
+    with query do
+    begin
+      SQL.Text:=     ' SELECT          n.IND_OPER,' +
+                     '                 n.IND_EMIT,' +
+                     '                 n.COD_PART,' +
+                     '                 n.COD_MOD,' +
+                     '                 n.COD_SIT,' +
+                     '                 n.SER,' +
+                     '                 n.NUM_DOC,' +
+                     '                 n.CHV_NFE,' +
+                     '                 n.DT_DOC,' +
+                     '                 n.DT_E_S,' +
+                     '                 n.VL_DOC,' +
+                     '                 n.IND_PGTO,' +
+                     '                 n.VL_DESC,' +
+                     '                 n.VL_ABAT_NT,' +
+                     '                 n.VL_MERC,' +
+                     '                 n.IND_FRT,' +
+                     '                 n.VL_FRT,' +
+                     '                 n.VL_SEG,' +
+                     '                 n.VL_OUT_DA,' +
+                     '                 n.VL_BC_ICMS,' +
+                     '                 n.VL_ICMS,' +
+                     '                 n.VL_BC_ICMS_ST,' +
+                     '                 n.VL_ICMS_ST,' +
+                     '                 n.VL_IPI,' +
+                     '                 n.VL_PIS,' +
+                     '                 n.VL_COFINS,' +
+                     '                 n.VL_PIS_ST,' +
+                     '                 n.VL_COFINS_ST' +
+                    ' FROM RC100_NOTAS n' +
+                    ' WHERE n.ID_SPED = ' + QuotedStr(lIdSped);
+
+      Open;
+      if not IsEmpty then
+      begin
+        First();
+        while not Eof do
+        begin
+          auxC100:= TRegistroC100.Create();
+          with auxC100 do
+          begin
+            Ind_Oper := FieldByName('Ind_Oper').AsString;
+            Ind_Emit := FieldByName('Ind_Emit').AsString;
+            Cod_Part := FieldByName('Cod_Part').AsString;
+            Cod_Mod := FieldByName('Cod_Mod').AsString;
+            Cod_Sit := FieldByName('Cod_Sit').AsString;
+            Ser := FieldByName('Ser').AsString;
+            Num_Doc := FieldByName('Num_Doc').AsString;
+            Chv_Nfe := FieldByName('Chv_Nfe').AsString;
+            Dt_Doc := FieldByName('Dt_Doc').AsString;
+            Dt_E_S := FieldByName('Dt_E_S').AsString;
+            Vl_Doc := FieldByName('Vl_Doc').AsString;
+            Ind_Pgto := FieldByName('Ind_Pgto').AsString;
+            Vl_Desc := FieldByName('Vl_Desc').AsString;
+            Vl_Abat_Nt := FieldByName('Vl_Abat_Nt').AsString;
+            Vl_Merc := FieldByName('Vl_Merc').AsString;
+            Ind_Frt := FieldByName('Ind_Frt').AsString;
+            Vl_Frt := FieldByName('Vl_Frt').AsString;
+            Vl_Seg := FieldByName('Vl_Seg').AsString;
+            Vl_Out_Da := FieldByName('Vl_Out_Da').AsString;
+            Vl_BC_ICMS := FieldByName('Vl_BC_ICMS').AsString;
+            Vl_ICMS := FieldByName('Vl_ICMS').AsString;
+            Vl_BC_ICMS_ST := FieldByName('Vl_BC_ICMS_ST').AsString;
+            Vl_ICMS_ST := FieldByName('Vl_ICMS_ST').AsString;
+            Vl_IPI := FieldByName('Vl_IPI').AsString;
+            Vl_PIS := FieldByName('Vl_PIS').AsString;
+            Vl_COFINS := FieldByName('Vl_COFINS').AsString;
+            Vl_PIS_ST := FieldByName('Vl_PIS_ST').AsString;
+            Vl_COFINS_ST := FieldByName('Vl_COFINS_ST').AsString;
+          end;
+
+          Result.Add(auxC100);
+          Next();
+        end;
+      end;
+      Close;
+    end;
+  finally
+    FreeAndNil(query);
+  end;
+end;
+
+procedure TRegistroC100.excluir(lIdSPED: integer);
+var
+  query: TIBQuery;
+begin
+  query := PoolDeConexoes.getConexao(_BD_COMPARA_FISCAL).createNewQuery;
+  try
+    with query do
+    begin
+      SQL.Text := ' DELETE FROM RC100_NOTAS n' +
+                  ' WHERE n.id_sped = ' + QuotedStr(IntToStr(lIdSPED));
+      ExecSQL;
+      Transaction.Commit;
+      Close;
+    end;
+  finally
+    FreeAndNil(query);
+  end;
+end;
+
+
+end.
+

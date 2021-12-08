@@ -1,0 +1,177 @@
+unit UnClasseConfiguracao;
+
+interface
+
+uses
+  Generics.Collections, XMLIntf, XMLDoc;
+
+type
+  TConfiguracao = class
+  private
+    sUsuario,
+    sSenha,
+    sUrlAPI,
+    sUrlConsulta: string;
+    sCredencialAutenticacao: string;
+    sIdEmpresa,
+    sIdLocal,
+    sIntervaloSincronizacao,
+    sIntervaloEnvio,
+    sUltimoEnvio: string;
+
+    oListadeUrlBase: TList<string>;
+
+    function pegaNodeConfiguracao : IXMLNode;
+    function pegaArquivoXML : TXMLDocument;
+
+  public
+    constructor Create();
+
+    property Usuario: string
+      read sUsuario
+      write sUsuario;
+
+    property Senha: string
+      read sSenha
+      write sSenha;
+
+    property UrlAPI: string
+      read sUrlAPI
+      write sUrlAPI;
+
+    property UrlConsulta: string
+      read sUrlConsulta
+      write sUrlConsulta;
+
+    property CredencialAutenticacao: string
+      read sCredencialAutenticacao
+      write sCredencialAutenticacao;
+
+    property IdEmpresa: string
+      read sIdEmpresa
+      write sIdEmpresa;
+
+    property IdLocal: string
+      read sIdLocal
+      write sIdLocal;
+
+    property IntervaloSincronizacao: string
+      read sIntervaloSincronizacao
+      write sIntervaloSincronizacao;
+
+    property IntervaloEnvio: string
+      read sIntervaloEnvio
+      write sIntervaloEnvio;
+
+    property UltimoEnvio: string
+      read sUltimoEnvio
+      write sUltimoEnvio;
+
+    property ListaDeUrlBase: TList<string>
+      read oListadeUrlBase
+      write oListadeUrlBase;
+
+  end;
+
+implementation
+
+uses
+  SysUtils, Forms, Windows, Dialogs, NetEncoding;
+
+{ TConfiguracao }
+
+constructor TConfiguracao.Create();
+var
+  oNodeConfiguracao: IXMLNode;
+  Base64: TBase64Encoding;
+
+  procedure retornaConfiguracaoDoXML(node : IXMLNode);
+  var
+    nome: String;
+    i : Integer;
+    nodeFilho : IXMLNode;
+  begin
+    for i := 0 to node.ChildNodes.Count - 1 do
+    begin
+      nodeFilho := node.ChildNodes[i];
+      if (nodeFilho.ChildNodes.Count > 0) then
+        retornaConfiguracaoDoXML(nodeFilho)
+      else
+      begin
+        nome := node.NodeName;
+        if (node.IsTextElement) then
+        begin
+          If nome = 'Usuario' then
+            sUsuario := node.Text
+          else If nome = 'Senha' then
+            sSenha := node.Text
+          else If nome = 'IdEmpresa' then
+            sIdEmpresa := node.Text
+          else If nome = 'IdLocal' then
+            sIdLocal := node.Text
+          else If (copy(nome, 1, 7) = 'UrlBase') AND (node.Text <> '') then
+            oListadeUrlBase.Add(node.Text)
+          else If nome = 'UrlAPI' then
+            sUrlAPI := node.Text
+          else If nome = 'UrlConsulta' then
+            sUrlConsulta := node.Text
+          else If nome = 'IntervaloSincronizacao' then
+            sIntervaloSincronizacao := node.Text
+          else If nome = 'IntervaloEnvio' then
+            sIntervaloEnvio := node.Text
+          else If nome = 'UltimoEnvio' then
+            sUltimoEnvio := node.Text;
+        end;
+      end;
+
+    end;
+
+  end;
+begin
+  //informações default
+  sUsuario := '';
+  sSenha := '';
+  sUrlAPI := '';
+  sUrlConsulta := '';
+  sIdEmpresa := '';
+  sIdLocal := '';
+  sIntervaloEnvio := '';
+  sIntervaloSincronizacao := '';
+  sUltimoEnvio := '';
+  oListadeUrlBase := TList<string>.Create();
+
+  //pega informações do arquivo de configurações .xml
+  oNodeConfiguracao := pegaNodeConfiguracao;
+  if oNodeConfiguracao <> nil then
+    retornaConfiguracaoDoXML(oNodeConfiguracao);
+
+  //cria credencial de autenticação codificando "USUARIO:SENHA" em base 64
+  Base64 := TBase64Encoding.Create(0);
+  sCredencialAutenticacao := sUsuario + ':' + sSenha;
+  sCredencialAutenticacao := Base64.Encode(sCredencialAutenticacao);
+end;
+
+function TConfiguracao.pegaNodeConfiguracao : IXMLNode;
+begin
+  try
+    Result := pegaArquivoXML.DocumentElement.ChildNodes.FindNode('Scanntech').ChildNodes.FindNode('Configuracao');
+  except
+    Application.MessageBox('Arquivo Config XML não encontrado!',
+                            'Erro', MB_OK + MB_ICONERROR);
+  end;
+end;
+
+function TConfiguracao.pegaArquivoXML : TXMLDocument;
+var
+  caminhoXML: String;
+begin
+  caminhoXML:= ExtractFilePath(ParamStr(0)) + 'configScanntech.xml';
+  if FileExists(caminhoXML) then
+  begin
+    Result := TXMLDocument.Create(Application);
+    Result.Active:= True;
+    Result.LoadFromFile(caminhoXML);
+  end;
+end;
+
+end.

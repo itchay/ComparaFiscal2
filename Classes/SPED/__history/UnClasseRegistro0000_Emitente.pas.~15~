@@ -1,0 +1,197 @@
+unit UnClasseRegistro0000_Emitente;
+
+interface
+
+uses
+  UnClasseUtils;
+
+type
+
+  // SPED Fiscal
+  TRegistro0000 = class(TObject)
+  private
+    sRegistro: string;
+    fCodigoFinalidadeArquivo: Integer;
+    fCodigoVersaoLeiaute: String;
+    fDataInicial: String;
+    fDataFinal: String;
+    fNomeEmpresa: String;
+    sCNPJ: String;
+    fInscricaoEstadual: String;
+    sUF: String;
+    sCod_Mun: String;
+    sSUFRAMA: String;
+    sInd_Ativ: String;
+    fCPF: String;
+    sIM: String;
+    sInd_Perfil: String;
+
+  public
+    property registro: String
+      read sRegistro
+      write sRegistro;
+
+    property CodigoFinalidadeArquivo: Integer
+      read fCodigoFinalidadeArquivo
+      write fCodigoFinalidadeArquivo;
+
+    property CodigoVersaoLeiaute: String
+      read fCodigoVersaoLeiaute
+      write fCodigoVersaoLeiaute;
+
+    property DataInicial: String
+      read fDataInicial
+      write fDataInicial;
+
+    property DataFinal: String
+      read fDataFinal
+      write fDataFinal;
+
+    property NomeEmpresa: String
+      read fNomeEmpresa
+      write fNomeEmpresa;
+
+    property CNPJ: String
+      read sCNPJ
+      write sCNPJ;
+
+    property InscricaoEstadual: String
+      read fInscricaoEstadual
+      write fInscricaoEstadual;
+
+    property UF: String
+      read sUF
+      write sUF;
+
+    property Cod_Mun: String
+      read sCod_Mun
+      write sCod_Mun;
+
+    property SUFRAMA: String
+      read sSUFRAMA
+      write sSUFRAMA;
+
+    property Ind_Ativ: String
+      read sInd_Ativ
+      write sInd_Ativ;
+
+    property CPF: String
+      read fCPF
+      write fCPF;
+
+    property IM: String
+      read sIM
+      write sIM;
+
+    property Ind_Perfil: String
+      read sInd_Perfil
+      write sInd_Perfil;
+
+    constructor Create();
+
+    function ToString: String; override;
+    function salvar(lIdSPED: integer): boolean;
+  end;
+
+implementation
+
+uses
+  System.SysUtils, UnConstantes, IBQuery, UnClassePool_BD_IB;
+
+{ TRegistro0000 }
+
+constructor TRegistro0000.Create;
+begin
+  inherited Create();
+  sRegistro:= '0000';
+  fCodigoFinalidadeArquivo:= 0;
+  fCPF:= '';
+  fInscricaoEstadual:= '';
+  sIM:= '';
+  sInd_Perfil:= '';
+  fCodigoVersaoLeiaute:= '';
+  fDataInicial:= '';
+  fDataFinal:= '';
+  fNomeEmpresa:= '';
+  sCNPJ:= '';
+  fInscricaoEstadual:= '';
+  sUF:= '';
+  sCod_Mun:= '';
+  sSUFRAMA:= '';
+  sInd_Ativ:= '';
+end;
+
+function TRegistro0000.ToString: String;
+begin
+  Result:= '|' + sRegistro +
+           '|' + completaComZeros(True, fCodigoVersaoLeiaute, 3) +
+           '|' + IntToStr(fCodigoFinalidadeArquivo) +
+           '|' + fDataInicial +
+           '|' + fDataFinal +
+           '|' + fNomeEmpresa +
+           '|' + sCNPJ +
+           '|' + fCPF +
+           '|' + sUF +
+           '|' + fInscricaoEstadual +
+           '|' + sCod_Mun +
+           '|' + sIM +
+           '|' + sSUFRAMA +
+           '|' + sInd_Perfil +
+           '|' + sInd_Ativ + '|';
+end;
+
+function TRegistro0000.salvar(lIdSPED: integer): boolean;
+var
+  i: Integer;
+  query1, query2: TIBQuery;
+begin
+  Result := false;
+  query1 := PoolDeConexoes.getConexao(_BD_COMPARA_FISCAL).createNewQuery;
+  try
+    with query1 do
+    begin
+        SQL.Text:= ' INSERT INTO R0000_EMITENTE(CODIGO_FINALIDADE,' +
+                              '       CODIGO_VERSAO,' +
+                              '       DATA_INICIAL,' +
+                              '       DATA_FINAL,' +
+                              '       NOME_EMPRESA,' +
+                              '       CNPJ,' +
+                              '       INSCRICAO_ESTADUAL,' +
+                              '       UF,' +
+                              '       COD_MUN,' +
+                              '       SUFRAMA,' +
+                              '       IND_ATIV,' +
+                              '       CPF,' +
+                              '       INSCRICAO_MUNICIPAL,' +
+                              '       IND_PERFIL,' +
+                              '       ID_SPED)' +
+                   ' VALUES (' + QuotedStr(IntToStr(self.fCodigoFinalidadeArquivo)) + ',' +
+                   '         ' + QuotedStr(Self.fCodigoVersaoLeiaute) + ',' +
+                   '         ' + QuotedStr(converteFormatoData(self.fDataInicial)) + ',' +
+                   '         ' + QuotedStr(converteFormatoData(self.fDataFinal)) + ',' +
+                   '         ' + QuotedStr(self.fNomeEmpresa) + ',' +
+                   '         ' + QuotedStr(self.sCNPJ) + ',' +
+                   '         ' + QuotedStr(self.fInscricaoEstadual) + ',' +
+                   '         ' + QuotedStr(self.sUF) + ',' +
+                   '         ' + QuotedStr(self.sCod_Mun) + ',' +
+                   '         ' + QuotedStr(self.sSUFRAMA) + ',' +
+                   '         ' + QuotedStr(self.sInd_Ativ) + ',' +
+                   '         ' + QuotedStr(self.fCPF) + ',' +
+                   '         ' + QuotedStr(self.sIM) + ',' +
+                   '         ' + QuotedStr(self.sInd_Perfil) + ',' +
+                   '         ' + QuotedStr(IntToStr(lIdSPED)) + ')';
+
+        ExecSQL;
+        Transaction.Commit;
+        Close;
+
+        Result := true;
+    end;
+
+  finally
+    FreeAndNil(query1);
+  end;
+end;
+
+end.
+

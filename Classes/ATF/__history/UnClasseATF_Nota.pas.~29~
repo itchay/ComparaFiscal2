@@ -1,0 +1,495 @@
+unit UnClasseATF_Nota;
+
+interface
+
+uses
+  Generics.Collections, UnClasseATF_Emitente;
+
+type
+  TATF_Nota = class (TObject)
+    private
+      sCHAVE_ACESSO,
+      sNOME_RAZAO_SOCIAL_DEST,
+      sCPF_CNPJ_DEST,
+      sINSCRICAO_ESTADUAL_DEST,
+      sPLACA_VEICULO_REBOQUE,
+      sUF_PLACA,
+      sNOME_TRANSPORTADORA,
+      sINSCRICAO_ESTADUAL_TRANSP,
+      sCPF_CNPJ_TRANSPORTADORA,
+      sIP_EMITENTE,
+      sPORTA_CONEXAO_ORIGEM,
+      sSITUACAO,
+      sTIPO_OPERACAO,
+      sUF_DEST,
+      sMODALIDADE_FRETE: string;
+
+      iID,
+      iNUM_DOC,
+      iSERIE: integer;
+
+      fVALOR_TOTAL_NOTA,
+      fBASE_ICMS,
+      fVALOR_ICMS,
+      fBASE_ICMS_ST,
+      fVALOR_ICMS_SUBSTITUICAO,
+      fVALOR_TOTAL_DOS_PRODUTOS,
+      fVALOR_FRETE,
+      fVALOR_SEGURO,
+      fVALOR_DESCONTO,
+      fVALOR_OUTRAS_DESPESAS,
+      fVALOR_IPI,
+      fVALOR_TOTAL_ICMS_UF_DEST,
+      fVALOR_TOTAL_ICMS_UF_REMET,
+      fVALOR_ICMS_FCP_UF_DEST: double;
+
+      daDATA_EMISSAO: TDATE;
+      tHORA_EMISSAO: TTIME;
+      dtDATA_HORA_CONEXAO_ORIGEM: TDateTime;
+
+      oEmitente: TATF_Emitente;
+
+      const
+        _TAMANHO_REG = 04;
+        _TAMANHO_IND_OPER = 01;
+        _TAMANHO_EMIT = 01;
+        _TAMANHO_COD_MOD = 02;
+        _TAMANHO_COD_SIT = 02;
+        _TAMANHO_CHV_NFE = 44;
+        _TAMANHO_IND_PGTO = 01;
+        _TAMANHO_IND_FRT = 01;
+
+    public
+
+      property Emitente: TATF_Emitente
+        read oEmitente
+        write oEmitente;
+
+      property CHAVE_ACESSO: string
+          read sCHAVE_ACESSO
+          write sCHAVE_ACESSO;
+
+      property NOME_RAZAO_SOCIAL_DEST: string
+          read sNOME_RAZAO_SOCIAL_DEST
+          write sNOME_RAZAO_SOCIAL_DEST;
+
+      property CPF_CNPJ_DEST: string
+          read sCPF_CNPJ_DEST
+          write sCPF_CNPJ_DEST;
+
+      property INSCRICAO_ESTADUAL_DEST: string
+          read sINSCRICAO_ESTADUAL_DEST
+          write sINSCRICAO_ESTADUAL_DEST;
+
+      property PLACA_VEICULO_REBOQUE: string
+          read sPLACA_VEICULO_REBOQUE
+          write sPLACA_VEICULO_REBOQUE;
+
+      property UF_PLACA: string
+          read sUF_PLACA
+          write sUF_PLACA;
+
+      property NOME_TRANSPORTADORA: string
+          read sNOME_TRANSPORTADORA
+          write sNOME_TRANSPORTADORA;
+
+      property INSCRICAO_ESTADUAL_TRANSP: string
+          read sINSCRICAO_ESTADUAL_TRANSP
+          write sINSCRICAO_ESTADUAL_TRANSP;
+
+      property CPF_CNPJ_TRANSPORTADORA: string
+          read sCPF_CNPJ_TRANSPORTADORA
+          write sCPF_CNPJ_TRANSPORTADORA;
+
+      property IP_EMITENTE: string
+          read sIP_EMITENTE
+          write sIP_EMITENTE;
+
+      property PORTA_CONEXAO_ORIGEM: string
+          read sPORTA_CONEXAO_ORIGEM
+          write sPORTA_CONEXAO_ORIGEM;
+
+      property SITUACAO: string
+          read sSITUACAO
+          write sSITUACAO;
+
+      property TIPO_OPERACAO: string
+          read sTIPO_OPERACAO
+          write sTIPO_OPERACAO;
+
+      property UF_DEST: string
+          read sUF_DEST
+          write sUF_DEST;
+
+      property MODALIDADE_FRETE: string
+          read sMODALIDADE_FRETE
+          write sMODALIDADE_FRETE;
+
+      property ID: integer
+          read iID
+          write iID;
+
+      property NUM_DOC: integer
+          read iNUM_DOC
+          write iNUM_DOC;
+
+      property SERIE: integer
+          read iSERIE
+          write iSERIE;
+
+      property VALOR_TOTAL_NOTA: double
+          read fVALOR_TOTAL_NOTA
+          write fVALOR_TOTAL_NOTA;
+
+      property BASE_ICMS: double
+          read fBASE_ICMS
+          write fBASE_ICMS;
+
+      property VALOR_ICMS: double
+          read fVALOR_ICMS
+          write fVALOR_ICMS;
+
+      property BASE_ICMS_ST: double
+          read fBASE_ICMS_ST
+          write fBASE_ICMS_ST;
+
+      property VALOR_ICMS_SUBSTITUICAO: double
+          read fVALOR_ICMS_SUBSTITUICAO
+          write fVALOR_ICMS_SUBSTITUICAO;
+
+      property VALOR_TOTAL_DOS_PRODUTOS: double
+          read fVALOR_TOTAL_DOS_PRODUTOS
+          write fVALOR_TOTAL_DOS_PRODUTOS;
+
+      property VALOR_FRETE: double
+          read fVALOR_FRETE
+          write fVALOR_FRETE;
+
+      property VALOR_SEGURO: double
+          read fVALOR_SEGURO
+          write fVALOR_SEGURO;
+
+      property VALOR_DESCONTO: double
+          read fVALOR_DESCONTO
+          write fVALOR_DESCONTO;
+
+      property VALOR_OUTRAS_DESPESAS: double
+          read fVALOR_OUTRAS_DESPESAS
+          write fVALOR_OUTRAS_DESPESAS;
+
+      property VALOR_IPI: double
+          read fVALOR_IPI
+          write fVALOR_IPI;
+
+      property VALOR_TOTAL_ICMS_UF_DEST: double
+          read fVALOR_TOTAL_ICMS_UF_DEST
+          write fVALOR_TOTAL_ICMS_UF_DEST;
+
+      property VALOR_TOTAL_ICMS_UF_REMET: double
+          read fVALOR_TOTAL_ICMS_UF_REMET
+          write fVALOR_TOTAL_ICMS_UF_REMET;
+
+      property VALOR_ICMS_FCP_UF_DEST: double
+          read fVALOR_ICMS_FCP_UF_DEST
+          write fVALOR_ICMS_FCP_UF_DEST;
+
+      property DATA_EMISSAO: TDATE
+          read daDATA_EMISSAO
+          write daDATA_EMISSAO;
+
+      property HORA_EMISSAO: TTIME
+          read tHORA_EMISSAO
+          write tHORA_EMISSAO;
+
+      property DATA_HORA_CONEXAO_ORIGEM: TDateTime
+          read dtDATA_HORA_CONEXAO_ORIGEM
+          write dtDATA_HORA_CONEXAO_ORIGEM;
+
+      function salvar(lIdATF: integer): boolean;
+      function listar(lIdATF: string): TObjectList<TATF_Nota>;
+      procedure excluir(lIdATF: integer);
+
+      constructor Create();
+  end;
+
+implementation
+
+uses UnClasseUtils, System.SysUtils, UnConstantes, IBQuery, UnClassePool_BD_IB, Dialogs;
+
+{ TATF_Nota }
+
+constructor TATF_Nota.Create;
+begin
+  inherited Create();
+  sCHAVE_ACESSO:= '';
+  sNOME_RAZAO_SOCIAL_DEST:= '';
+  sCPF_CNPJ_DEST:= '';
+  sINSCRICAO_ESTADUAL_DEST:= '';
+  sPLACA_VEICULO_REBOQUE:= '';
+  sUF_PLACA:= '';
+  sNOME_TRANSPORTADORA:= '';
+  sINSCRICAO_ESTADUAL_TRANSP:= '';
+  sCPF_CNPJ_TRANSPORTADORA:= '';
+  sIP_EMITENTE:= '';
+  sPORTA_CONEXAO_ORIGEM:= '';
+  sSITUACAO:= '';
+  sTIPO_OPERACAO:= '';
+  sUF_DEST:= '';
+  sMODALIDADE_FRETE:= '';
+  iID:= 0;
+  iNUM_DOC:= 0;
+  iSERIE:= 0;
+  fVALOR_TOTAL_NOTA:= 0;
+  fBASE_ICMS:= 0;
+  fVALOR_ICMS:= 0;
+  fBASE_ICMS_ST:= 0;
+  fVALOR_ICMS_SUBSTITUICAO:= 0;
+  fVALOR_TOTAL_DOS_PRODUTOS:= 0;
+  fVALOR_FRETE:= 0;
+  fVALOR_SEGURO:= 0;
+  fVALOR_DESCONTO:= 0;
+  fVALOR_OUTRAS_DESPESAS:= 0;
+  fVALOR_IPI:= 0;
+  fVALOR_TOTAL_ICMS_UF_DEST:= 0;
+  fVALOR_TOTAL_ICMS_UF_REMET:= 0;
+  fVALOR_ICMS_FCP_UF_DEST:= 0;
+  daDATA_EMISSAO:= now();
+  tHORA_EMISSAO:= now();
+  dtDATA_HORA_CONEXAO_ORIGEM:= now();
+  oEmitente := TATF_Emitente.Create();
+end;
+
+function TATF_Nota.salvar(lIdATF: integer): boolean;
+var
+  i: Integer;
+  query1, query2: TIBQuery;
+begin
+  Result := false;
+  query1 := PoolDeConexoes.getConexao(_BD_COMPARA_FISCAL).createNewQuery;
+  try
+    //try
+       with query1 do
+       begin
+          SQL.Text:= ' INSERT INTO ATF_NOTAS(CHAVE_ACESSO,' +
+                          '                  NOME_RAZAO_SOCIAL_DEST,' +
+                          '                  CPF_CNPJ_DEST,' +
+                          '                  INSCRICAO_ESTADUAL_DEST,' +
+                          '                  PLACA_VEICULO_REBOQUE,' +
+                          '                  UF_PLACA,' +
+                          '                  NOME_TRANSPORTADORA,' +
+                          '                  INSCRICAO_ESTADUAL_TRANSP,' +
+                          '                  CPF_CNPJ_TRANSPORTADORA,' +
+                          '                  IP_EMITENTE,' +
+                          '                  PORTA_CONEXAO_ORIGEM,' +
+                          '                  SITUACAO,' +
+                          '                  TIPO_OPERACAO,' +
+                          '                  UF_DEST,' +
+                          '                  MODALIDADE_FRETE,' +
+                          '                  NUM_DOC,' +
+                          '                  SERIE,' +
+                          '                  VALOR_TOTAL_NOTA,' +
+                          '                  BASE_ICMS,' +
+                          '                  VALOR_ICMS,' +
+                          '                  BASE_ICMS_ST,' +
+                          '                  VALOR_ICMS_SUBSTITUICAO,' +
+                          '                  VALOR_TOTAL_DOS_PRODUTOS,' +
+                          '                  VALOR_FRETE,' +
+                          '                  VALOR_SEGURO,' +
+                          '                  VALOR_DESCONTO,' +
+                          '                  VALOR_OUTRAS_DESPESAS,' +
+                          '                  VALOR_IPI,' +
+                          '                  VALOR_TOTAL_ICMS_UF_DEST,' +
+                          '                  VALOR_TOTAL_ICMS_UF_REMET,' +
+                          '                  VALOR_ICMS_FCP_UF_DEST,' +
+                          '                  DATA_EMISSAO,' +
+                          '                  HORA_EMISSAO,' +
+                          '                  DATA_HORA_CONEXAO_ORIGEM,' +
+                          '                  RAZAO_SOCIAL,' +
+                          '                  CNPJ,' +
+                          '                  INSCRICAO_ESTADUAL,' +
+                          '                  SIGLA_UF,' +
+                          '                  ID_ATF)' +
+                      ' VALUES (' + QuotedStr(sCHAVE_ACESSO)+ ',' +
+                      '         ' + QuotedStr(sNOME_RAZAO_SOCIAL_DEST)+ ',' +
+                      '         ' + QuotedStr(sCPF_CNPJ_DEST)+ ',' +
+                      '         ' + QuotedStr(sINSCRICAO_ESTADUAL_DEST)+ ',' +
+                      '         ' + QuotedStr(sPLACA_VEICULO_REBOQUE)+ ',' +
+                      '         ' + QuotedStr(sUF_PLACA)+ ',' +
+                      '         ' + QuotedStr(sNOME_TRANSPORTADORA)+ ',' +
+                      '         ' + QuotedStr(sINSCRICAO_ESTADUAL_TRANSP)+ ',' +
+                      '         ' + QuotedStr(sCPF_CNPJ_TRANSPORTADORA)+ ',' +
+                      '         ' + QuotedStr(sIP_EMITENTE)+ ',' +
+                      '         ' + QuotedStr(sPORTA_CONEXAO_ORIGEM)+ ',' +
+                      '         ' + QuotedStr(sSITUACAO)+ ',' +
+                      '         ' + QuotedStr(sTIPO_OPERACAO)+ ',' +
+                      '         ' + QuotedStr(sUF_DEST)+ ',' +
+                      '         ' + QuotedStr(sMODALIDADE_FRETE)+ ',' +
+                      '         ' + QuotedStr(IntToStr(iNUM_DOC))+ ',' +
+                      '         ' + QuotedStr(IntToStr(iSERIE))+ ',' +
+                      '         ' + QuotedStr(formataFloatParaBanco(FloatToStrF(fVALOR_TOTAL_NOTA, ffnumber, 15, 02))) + ',' +
+                      '         ' + QuotedStr(formataFloatParaBanco(FloatToStrF(fBASE_ICMS, ffnumber, 15, 02))) + ',' +
+                      '         ' + QuotedStr(formataFloatParaBanco(FloatToStrF(fVALOR_ICMS, ffnumber, 15, 02))) + ',' +
+                      '         ' + QuotedStr(formataFloatParaBanco(FloatToStrF(fBASE_ICMS_ST, ffnumber, 15, 02))) + ',' +
+                      '         ' + QuotedStr(formataFloatParaBanco(FloatToStrF(fVALOR_ICMS_SUBSTITUICAO, ffnumber, 15, 02))) + ',' +
+                      '         ' + QuotedStr(formataFloatParaBanco(FloatToStrF(fVALOR_TOTAL_DOS_PRODUTOS, ffnumber, 15, 02))) + ',' +
+                      '         ' + QuotedStr(formataFloatParaBanco(FloatToStrF(fVALOR_FRETE, ffnumber, 15, 02))) + ',' +
+                      '         ' + QuotedStr(formataFloatParaBanco(FloatToStrF(fVALOR_SEGURO, ffnumber, 15, 02))) + ',' +
+                      '         ' + QuotedStr(formataFloatParaBanco(FloatToStrF(fVALOR_DESCONTO, ffnumber, 15, 02))) + ',' +
+                      '         ' + QuotedStr(formataFloatParaBanco(FloatToStrF(fVALOR_OUTRAS_DESPESAS, ffnumber, 15, 02))) + ',' +
+                      '         ' + QuotedStr(formataFloatParaBanco(FloatToStrF(fVALOR_IPI, ffnumber, 15, 02))) + ',' +
+                      '         ' + QuotedStr(formataFloatParaBanco(FloatToStrF(fVALOR_TOTAL_ICMS_UF_DEST, ffnumber, 15, 02))) + ',' +
+                      '         ' + QuotedStr(formataFloatParaBanco(FloatToStrF(fVALOR_TOTAL_ICMS_UF_REMET, ffnumber, 15, 02))) + ',' +
+                      '         ' + QuotedStr(formataFloatParaBanco(FloatToStrF(fVALOR_ICMS_FCP_UF_DEST, ffnumber, 15, 02))) + ',' +
+                      '         ' + QuotedStr(formatDateTime('mm/dd/yyyy', daDATA_EMISSAO))+ ',' +
+                      '         ' + QuotedStr(formatDateTime('hh:nn', tHORA_EMISSAO))+ ',' +
+                      '         ' + QuotedStr(formatDateTime('mm/dd/yyyy hh:nn', dtDATA_HORA_CONEXAO_ORIGEM)) + ',' +
+                      '         ' + QuotedStr(Self.Emitente.NomeEmpresa) + ',' +
+                      '         ' + QuotedStr(Self.Emitente.CNPJ) + ',' +
+                      '         ' + QuotedStr(Self.Emitente.InscricaoEstadual) + ',' +
+                      '         ' + QuotedStr(Self.Emitente.UF) + ',' +
+                      '         ' + QuotedStr(IntToStr(lIdATF)) + ')';
+
+          ExecSQL;
+          Transaction.Commit;
+          Close;
+
+          Result := true;
+       end;
+    {except
+      showmessage('Nota Não Inserida no BD:' + self.sCHAVE_ACESSO + ' Num Doc:' + IntToStr(self.iNUM_DOC));
+    end;}
+
+  finally
+    FreeAndNil(query1);
+  end;
+end;
+
+function TATF_Nota.listar(lIdATF: string): TObjectList<TATF_Nota>;
+var
+  auxNota: TATF_Nota;
+  i: Integer;
+  query: TIBQuery;
+  ini, fim: string;
+begin
+  query := PoolDeConexoes.getConexao(_BD_COMPARA_FISCAL).createNewQuery;
+  Result:= TObjectList<TATF_Nota>.Create();
+  try
+    with query do
+    begin
+      SQL.Text:=     ' SELECT           n.CHAVE_ACESSO,' +
+                      '                 n.NOME_RAZAO_SOCIAL_DEST,' +
+                      '                 n.CPF_CNPJ_DEST,' +
+                      '                 n.INSCRICAO_ESTADUAL_DEST,' +
+                      '                 n.PLACA_VEICULO_REBOQUE,' +
+                      '                 n.UF_PLACA,' +
+                      '                 n.NOME_TRANSPORTADORA,' +
+                      '                 n.INSCRICAO_ESTADUAL_TRANSP,' +
+                      '                 n.CPF_CNPJ_TRANSPORTADORA,' +
+                      '                 n.IP_EMITENTE,' +
+                      '                 n.PORTA_CONEXAO_ORIGEM,' +
+                      '                 n.SITUACAO,' +
+                      '                 n.TIPO_OPERACAO,' +
+                      '                 n.UF_DEST,' +
+                      '                 n.MODALIDADE_FRETE,' +
+                      '                 n.ID_NOTA,' +
+                      '                 n.NUM_DOC,' +
+                      '                 n.SERIE,' +
+                      '                 n.VALOR_TOTAL_NOTA,' +
+                      '                 n.BASE_ICMS,' +
+                      '                 n.VALOR_ICMS,' +
+                      '                 n.BASE_ICMS_ST,' +
+                      '                 n.VALOR_ICMS_SUBSTITUICAO,' +
+                      '                 n.VALOR_TOTAL_DOS_PRODUTOS,' +
+                      '                 n.VALOR_FRETE,' +
+                      '                 n.VALOR_SEGURO,' +
+                      '                 n.VALOR_DESCONTO,' +
+                      '                 n.VALOR_OUTRAS_DESPESAS,' +
+                      '                 n.VALOR_IPI,' +
+                      '                 n.VALOR_TOTAL_ICMS_UF_DEST,' +
+                      '                 n.VALOR_TOTAL_ICMS_UF_REMET,' +
+                      '                 n.VALOR_ICMS_FCP_UF_DEST,' +
+                      '                 n.DATA_EMISSAO,' +
+                      '                 n.HORA_EMISSAO,' +
+                      '                 n.DATA_HORA_CONEXAO_ORIGEM' +
+                    ' FROM ATF_NOTAS n' +
+                    ' WHERE n.ID_ATF = ' + QuotedStr(lIdATF);
+
+      Open;
+      if not IsEmpty then
+      begin
+        First();
+        while not Eof do
+        begin
+          auxNota:= TATF_Nota.Create();
+          with auxNota do
+          begin
+            sCHAVE_ACESSO := FieldByName('sCHAVE_ACESSO').AsString;
+            sNOME_RAZAO_SOCIAL_DEST := FieldByName('sNOME_RAZAO_SOCIAL_DEST').AsString;
+            sCPF_CNPJ_DEST := FieldByName('sCPF_CNPJ_DEST').AsString;
+            sINSCRICAO_ESTADUAL_DEST := FieldByName('sINSCRICAO_ESTADUAL_DEST').AsString;
+            sPLACA_VEICULO_REBOQUE := FieldByName('sPLACA_VEICULO_REBOQUE').AsString;
+            sUF_PLACA := FieldByName('sUF_PLACA').AsString;
+            sNOME_TRANSPORTADORA := FieldByName('sNOME_TRANSPORTADORA').AsString;
+            sINSCRICAO_ESTADUAL_TRANSP := FieldByName('sINSCRICAO_ESTADUAL_TRANSP').AsString;
+            sCPF_CNPJ_TRANSPORTADORA := FieldByName('sCPF_CNPJ_TRANSPORTADORA').AsString;
+            sIP_EMITENTE := FieldByName('sIP_EMITENTE').AsString;
+            sPORTA_CONEXAO_ORIGEM := FieldByName('sPORTA_CONEXAO_ORIGEM').AsString;
+            sSITUACAO := FieldByName('sSITUACAO').AsString;
+            sTIPO_OPERACAO := FieldByName('sTIPO_OPERACAO').AsString;
+            sUF_DEST := FieldByName('sUF_DEST').AsString;
+            sMODALIDADE_FRETE := FieldByName('sMODALIDADE_FRETE').AsString;
+            iID := FieldByName('iID').AsInteger;
+            iNUM_DOC := FieldByName('iNUM_DOC').AsInteger;
+            iSERIE := FieldByName('iSERIE').AsInteger;
+            fVALOR_TOTAL_NOTA := FieldByName('fVALOR_TOTAL_NOTA').AsFloat;
+            fBASE_ICMS := FieldByName('fBASE_ICMS').AsFloat;
+            fVALOR_ICMS := FieldByName('fVALOR_ICMS').AsFloat;
+            fBASE_ICMS_ST := FieldByName('fBASE_ICMS_ST').AsFloat;
+            fVALOR_ICMS_SUBSTITUICAO := FieldByName('fVALOR_ICMS_SUBSTITUICAO').AsFloat;
+            fVALOR_TOTAL_DOS_PRODUTOS := FieldByName('fVALOR_TOTAL_DOS_PRODUTOS').AsFloat;
+            fVALOR_FRETE := FieldByName('fVALOR_FRETE').AsFloat;
+            fVALOR_SEGURO := FieldByName('fVALOR_SEGURO').AsFloat;
+            fVALOR_DESCONTO := FieldByName('fVALOR_DESCONTO').AsFloat;
+            fVALOR_OUTRAS_DESPESAS := FieldByName('fVALOR_OUTRAS_DESPESAS').AsFloat;
+            fVALOR_IPI := FieldByName('fVALOR_IPI').AsFloat;
+            fVALOR_TOTAL_ICMS_UF_DEST := FieldByName('fVALOR_TOTAL_ICMS_UF_DEST').AsFloat;
+            fVALOR_TOTAL_ICMS_UF_REMET := FieldByName('fVALOR_TOTAL_ICMS_UF_REMET').AsFloat;
+            fVALOR_ICMS_FCP_UF_DEST := FieldByName('fVALOR_ICMS_FCP_UF_DEST').AsFloat;
+            daDATA_EMISSAO := FieldByName('daDATA_EMISSAO').AsDatetime;
+            tHORA_EMISSAO := FieldByName('tHORA_EMISSAO').AsDatetime;
+            dtDATA_HORA_CONEXAO_ORIGEM := FieldByName('dtDATA_HORA_CONEXAO_ORIGEM').AsDatetime;
+          end;
+
+          Result.Add(auxNota);
+          Next();
+        end;
+      end;
+      Close;
+    end;
+  finally
+    FreeAndNil(query);
+  end;
+end;
+
+procedure TATF_Nota.excluir(lIdATF: integer);
+var
+  query: TIBQuery;
+begin
+  query := PoolDeConexoes.getConexao(_BD_COMPARA_FISCAL).createNewQuery;
+  try
+    with query do
+    begin
+      SQL.Text := ' DELETE FROM ATF_NOTAS n' +
+                  ' WHERE n.id_atf = ' + QuotedStr(IntToStr(lIdATF));
+      ExecSQL;
+      Transaction.Commit;
+      Close;
+    end;
+  finally
+    FreeAndNil(query);
+  end;
+end;
+
+
+end.
+

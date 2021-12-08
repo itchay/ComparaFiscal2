@@ -1,0 +1,180 @@
+unit UnFrmListarSPED;
+
+interface
+
+uses
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.Buttons, Vcl.ExtCtrls,
+  System.Actions, Vcl.ActnList, Vcl.Grids, Vcl.ComCtrls, UnClasseSPED, System.IOUtils, Generics.collections;
+
+type
+  TFrmListarSPED = class(TForm)
+    PnlInfoDoc: TPanel;
+    GroupBox4: TGroupBox;
+    EdtDocumentoEmitente: TEdit;
+    GroupBox3: TGroupBox;
+    DateFinal: TDateTimePicker;
+    StgSPED: TStringGrid;
+    GroupBox5: TGroupBox;
+    LblQtdeSPEDEncontrados: TLabel;
+    LblTotalSPEDEncontrados: TLabel;
+    GroupBox1: TGroupBox;
+    DateInicial: TDateTimePicker;
+    BitBtn1: TBitBtn;
+    BtnListar: TBitBtn;
+    ActionList1: TActionList;
+    ActFechar: TAction;
+    procedure ActFecharExecute(Sender: TObject);
+    procedure FormShow(Sender: TObject);
+    procedure StgSPEDDblClick(Sender: TObject);
+    procedure BtnListarClick(Sender: TObject);
+    procedure EdtDocumentoEmitenteExit(Sender: TObject);
+    procedure EdtDocumentoEmitenteKeyDown(Sender: TObject; var Key: Word;
+      Shift: TShiftState);
+    procedure DateInicialKeyDown(Sender: TObject; var Key: Word;
+      Shift: TShiftState);
+  private
+    { Private declarations }
+    oListaSPED: TObjectlist<TSPED>;
+    Procedure iniciaGridSPED();
+    procedure carregaGridSPED;
+  public
+    { Public declarations }
+    oSPEDSelecionado: TSPED;
+  end;
+
+var
+  FrmListarSPED: TFrmListarSPED;
+
+implementation
+
+uses
+  UnClasseUtils, UnClasseRegistroC100_Notas;
+
+{$R *.dfm}
+
+procedure TFrmListarSPED.ActFecharExecute(Sender: TObject);
+begin
+  Close();
+end;
+
+procedure TFrmListarSPED.FormShow(Sender: TObject);
+begin
+  iniciaGridSPED();
+  oSPEDSelecionado := TSPED.Create();
+  DateInicial.DateTime := now() - 365;
+  DateFinal.DateTime := now();
+end;
+
+Procedure TFrmListarSPED.iniciaGridSPED();
+begin
+  limparGrid(StgSPED);
+
+  with StgSPED do
+  begin
+    FixedCols:= 0;
+
+    Cells[1, 0]:= 'ID SPED';
+    Cells[2, 0]:= 'CNPJ';
+    Cells[3, 0]:= 'Emitente';
+    Cells[4, 0]:= 'Periodo Inicial';
+    Cells[5, 0]:= 'Periodo Final';
+    Cells[6, 0]:= 'Entrada';
+  end;
+end;
+
+procedure TFrmListarSPED.StgSPEDDblClick(Sender: TObject);
+var
+  I: Integer;
+  auxC100: TRegistroC100;
+begin
+  for I := 0 to oListaSPED.Count - 1 do
+  begin
+    if StgSPED.Cells[1, StgSPED.Row] = IntToStr(oListaSPED[i].Id_SPED) then
+    begin
+      oSPEDSelecionado := oListaSPED[i];
+      //carrega lista de C100
+      auxC100:= TRegistroC100.Create();
+      oSPEDSelecionado.ListaRegistrosC100 := auxC100.listar(IntToStr(oSPEDSelecionado.Id_SPED));
+      Close();
+    end;
+  end;
+end;
+
+procedure TFrmListarSPED.BtnListarClick(Sender: TObject);
+begin
+  carregaGridSPED();
+end;
+
+procedure TFrmListarSPED.carregaGridSPED();
+var
+  i: Integer;
+  auxValor: double;
+  auxQtde: integer;
+begin
+  limparGrid(StgSPED);
+  auxValor:= 0;
+  auxQtde:= 0;
+
+  oListaSPED := TObjectList<TSPED>.Create();
+  oListaSPED := oSPEDSelecionado.listar(true, EdtDocumentoEmitente.Text, DateInicial.DateTime, DateFinal.DateTime);
+  with StgSPED do
+  begin
+    auxQtde := oListaSPED.Count;
+    if oListaSPED.Count = 0 then
+    begin
+      StgSPED.RowCount:= 2;
+      ShowMessage('Nenhum SPED foi encontrado.');
+      LblQtdeSPEDEncontrados.Caption:= 'Nenhum SPED Encontrado';
+      //LblTotalSPEDEncontrados.Caption:= 'Valor Total: R$ 0,00';
+    end
+    else
+      StgSPED.RowCount:= oListaSPED.Count + 1;
+
+    for i:= 0 to oListaSPED.Count - 1 do
+    begin
+      Cells[1, i + 1]:= IntToStr(oListaSPED[i].Id_SPED);
+      Cells[2, i + 1]:= oListaSPED[i].Registro0000.CNPJ;
+      Cells[3, i + 1]:= oListaSPED[i].Registro0000.NomeEmpresa;
+      Cells[4, i + 1]:= converteFormatoData(oListaSPED[i].Registro0000.DataInicial);
+      Cells[5, i + 1]:= converteFormatoData(oListaSPED[i].Registro0000.DataFinal);
+      Cells[6, i + 1]:= FormatDateTime('dd/mm/yyyy hh:nn', oListaSPED[i].dataentrada);
+
+      //if oListaSPED[i].Vl_Doc <> '' then
+        //auxValor := auxValor + StrToFloat(oListaSPED[i].Vl_Doc);
+    end;
+
+  end;
+  //atualiza informação de totais
+  LblQtdeSPEDEncontrados.Caption:= IntToStr(auxQtde) + ' SPED(s) encontrado(s)';
+  //LblTotalSPEDEncontrados.Caption:= 'Valor Total: R$ ' + FloatToStrF(auxValor,ffnumber,10,02);
+end;
+
+procedure TFrmListarSPED.DateInicialKeyDown(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
+begin
+  case key of
+    VK_RETURN :
+    begin
+      DateFinal.SetFocus();
+    end;
+  end;
+end;
+
+procedure TFrmListarSPED.EdtDocumentoEmitenteExit(Sender: TObject);
+begin
+  EdtDocumentoEmitente.Text := retiraFormatacaoCPFCNPJ(EdtDocumentoEmitente.Text);
+end;
+
+procedure TFrmListarSPED.EdtDocumentoEmitenteKeyDown(Sender: TObject;
+  var Key: Word; Shift: TShiftState);
+begin
+  case key of
+    VK_RETURN :
+    begin
+      DateInicial.SetFocus();
+    end;
+  end;
+end;
+
+end.

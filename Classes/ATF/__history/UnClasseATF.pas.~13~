@@ -1,0 +1,265 @@
+unit UnClasseATF;
+
+interface
+
+uses
+  Generics.Collections, UnClasseATF_Emitente, UnClasseATF_Nota, Dialogs, forms, Winapi.Windows;
+
+type
+  TATF = class (TObject)
+    private
+      iId_ATF: integer;
+      sCaminhoArquivo, sArquivo: string;
+      oEmitente: TATF_Emitente;
+      oListaNotas: TObjectList<TATF_Nota>;
+
+      dtDataEntrada: TDateTime;
+      dDataEmissao: TDate;
+
+    public
+      property Id_ATF: integer
+        read iId_ATF
+        write iId_ATF;
+
+      property CaminhoArquivo: string
+        read sCaminhoArquivo
+        write sCaminhoArquivo;
+
+      property Arquivo: string
+        read sArquivo
+        write sArquivo;
+
+      property Emitente: TATF_Emitente
+        read oEmitente
+        write oEmitente;
+
+      property ListaNotas: TObjectList<TATF_Nota>
+        read oListaNotas
+        write oListaNotas;
+
+      property dataEntrada: TDateTime
+        read dtDataEntrada
+        write dtDataEntrada;
+
+      property DataEmissao: TDate
+        read dDataEmissao
+        write dDataEmissao;
+
+      function salvar(): integer;
+      function retornarUltimaIdATF: Integer;
+      function listar(bPesquisaSimplificada: boolean; sCNPJ: string; dDataInicio, dDataFinal: TDateTime): TObjectList<TATF>;
+      procedure excluir;
+      constructor Create();
+  end;
+
+implementation
+
+uses
+  IBQuery, SysUtils, UnClassePool_BD_IB, UnConstantes, UnClasseUtils;
+
+{ TATF }
+
+constructor TATF.Create;
+begin
+  inherited Create();
+  iId_ATF:= 0;
+  sCaminhoArquivo:= '';
+  sArquivo:= '';
+  oEmitente:= TATF_Emitente.Create();
+  oListaNotas:= TObjectList<TATF_Nota>.Create();
+  dtDataEntrada := now();
+  dDataEmissao := now();
+end;
+
+function TATF.salvar(): integer;
+var
+  i: Integer;
+  query1, query2: TIBQuery;
+  auxMenorDataEmissao: TDate;
+
+  procedure carregaDataEmissaoNotas();
+  begin
+    for I := 0 to oListaNotas.Count - 1 do
+    begin
+      If (i = 0) OR (oListaNotas[i].DATA_EMISSAO < auxMenorDataEmissao) then
+        auxMenorDataEmissao := oListaNotas[i].DATA_EMISSAO;
+    end;
+
+    Self.dDataEmissao := auxMenorDataEmissao;
+  end;
+begin
+  Result := 0;
+  query1 := PoolDeConexoes.getConexao(_BD_COMPARA_FISCAL).createNewQuery;
+
+  carregaDataEmissaoNotas();
+  try
+    with query1 do
+    begin
+        SQL.Text:= ' INSERT INTO ATF(CAMINHO_ARQUIVO,' +
+                    '                 DATA_EMISSAO,' +
+                    '                 ARQUIVO)' +
+                   ' VALUES (' + QuotedStr(self.sCaminhoArquivo) + ',' +
+                   '         ' + QuotedStr(formatDateTime('dd/mm/yyyy', self.dDataEmissao))+ ',' +
+                   '         ' + QuotedStr(Self.sArquivo) + ')';
+
+        ExecSQL;
+        Transaction.Commit;
+        Close;
+
+        Self.iId_ATF := retornarUltimaIdATF();
+        Result := Self.iId_ATF;
+    end;
+
+    oEmitente.salvar(Self.iId_ATF);
+    //Notas Fiscais
+    for i := 0 to oListaNotas.Count - 1 do
+    begin
+      oListaNotas[i].Salvar(Self.iId_ATF);
+    end;
+
+  finally
+    FreeAndNil(query1);
+  end;
+end;
+
+function TATF.retornarUltimaIdATF: Integer;
+var
+  query: TIBQuery;
+begin
+  query := PoolDeConexoes.getConexao(_BD_COMPARA_FISCAL).createNewQuery();
+  try
+    with query do
+    begin
+      SQL.Text := ' SELECT FIRST (1) s.id_ATF' +
+                  ' FROM ATF s' +
+                  ' ORDER BY s.id_ATF DESC';
+      Open;
+      if not IsEmpty then
+        Result := FieldByName('id_ATF').AsInteger;
+      Close;
+    end;
+  finally
+    FreeAndNil(query);
+  end;
+end;
+
+function TATF.listar(bPesquisaSimplificada: boolean; sCNPJ: string; dDataInicio, dDataFinal: TDateTime): TObjectList<TATF>;
+var
+  auxATF: TATF;
+  auxC100: TATF_Nota;
+  i: Integer;
+  query: TIBQuery;
+  ini, fim: string;
+begin
+  query := PoolDeConexoes.getConexao(_BD_COMPARA_FISCAL).createNewQuery;
+  Result:= TObjectList<TATF>.Create();
+  try
+    with query do
+    begin
+      SQL.Text:=    ' SELECT          a.ID_ATF,' +
+                    '                 a.CAMINHO_ARQUIVO,' +
+                    '                 a.ARQUIVO,' +
+                    '                 a.ENTRADA,' +
+                    '                 e.RAZAO_SOCIAL,' +
+                    '                 e.CNPJ,' +
+                    '                 e.INSCRICAO_ESTADUAL,' +
+                    '                 e.SIGLA_UF' +
+                    ' FROM ATF s' +
+                    ' INNER JOIN atf_emitente e on e.id_ATF = a.id_ATF' +
+                    ' WHERE ';
+
+
+      If (dDataInicio <> 0) and
+         (dDataFinal <> 0) then
+      begin
+         ini := FormatDateTime('mm/dd/yyyy', dDataInicio);
+         fim := FormatDateTime('mm/dd/yyyy', dDataFinal + 1);
+
+         SQL.Text:= SQL.Text + ' e.data_inicial between ''' + ini + ''' AND ''' + fim + '''';
+         SQL.Text:= SQL.Text + ' ORDER BY s.id_ATF desc';
+      end
+      else
+      begin
+        Application.MessageBox('O Período Inicial e Final são requeridos para efetuar a consulta!','Período Inválido',mb_Ok + mb_IconStop);
+        exit;
+      end;
+
+      if sCNPJ <> '' then
+        SQL.Text:= SQL.Text + ' AND e.CNPJ = ' + QuotedStr(sCNPJ);
+
+      Open;
+      if not IsEmpty then
+      begin
+        First();
+        while not Eof do
+        begin
+          auxATF:= TATF.Create();
+          with auxATF do
+          begin
+            //Identificação
+            Id_ATF := FieldByName('ID_ATF').AsInteger;
+            CaminhoArquivo := FieldByName('CAMINHO_ARQUIVO').AsString;
+            Arquivo := FieldByName('ARQUIVO').AsString;
+            dataEntrada := FieldByName('ENTRADA').AsDateTime;
+
+            With Emitente do
+            begin
+              NomeEmpresa := FieldByName('RAZAO_SOCIAL').AsString;
+              CNPJ := FieldByName('CNPJ').AsString;
+              InscricaoEstadual := FieldByName('INSCRICAO_ESTADUAL').AsString;
+              UF := FieldByName('SIGLA_UF').AsString;
+              Id_ATF := Id_ATF;
+            end;
+
+            if bPesquisaSimplificada = false then
+            begin
+              //retorna sem a lista de C100, para melhorar performance
+              auxC100:= TATF_Nota.Create();
+              auxATF.oListaNotas:= auxC100.listar(IntToStr(iId_ATF));
+            end;
+
+          end;
+
+          Result.Add(auxATF);
+          Next();
+        end;
+      end;
+      Close;
+    end;
+  finally
+    FreeAndNil(query);
+  end;
+end;
+
+procedure TATF.excluir;
+var
+  query: TIBQuery;
+  auxC100: TATF_Nota;
+begin
+  query := PoolDeConexoes.getConexao(_BD_COMPARA_FISCAL).createNewQuery;
+  try
+    with query do
+    begin
+      SQL.Text := ' DELETE FROM ATF a' +
+                  ' WHERE a.id_ATF = ' + QuotedStr(IntToStr(self.Id_ATF));
+      ExecSQL;
+      Transaction.Commit;
+      Close;
+    end;
+
+    //excluir registros
+    With Self do
+    begin
+      oEmitente.excluir(self.Id_ATF);
+
+      auxC100 := TATF_Nota.Create();
+      auxC100.excluir(Self.Id_ATF);
+    end;
+
+  finally
+    FreeAndNil(query);
+  end;
+end;
+
+end.
+

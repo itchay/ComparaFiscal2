@@ -1,0 +1,202 @@
+unit UnClasseConexao_IB;
+
+interface
+
+uses
+  Forms, Windows, DB, IBDatabase, IBQuery, UnConstanteBD_IB, Generics.Collections;
+
+type
+  TConexao_IB = class
+  private
+    ibConexao: TIBDatabase;
+
+    //function verificaBD_Caixa(lQuery: TIBQuery): Boolean;
+    function createNewTransaction: TIBTransaction;
+
+  public
+    constructor Create(nome, caminho : String);
+
+    function abrir(): Boolean;
+    procedure fecharConexaoDB();
+    function verificarCampoExistente(nomeTabela, nomeCampo: String): Boolean;
+    function name : String;
+    procedure Commit(lQuery: TIBQuery); overload;
+    function createNewQuery() : TIBQuery;
+
+    property conexao : TIBDatabase
+      read ibConexao;
+
+  end;
+
+implementation
+
+uses
+  System.SysUtils, UnClassePool_BD_IB;
+
+{ TConexao }
+
+procedure TConexao_IB.fecharConexaoDB;
+begin
+  try
+    conexao.Close;
+  except
+    Application.MessageBox('Não foi possível fechar a conexão com o banco de dados!', 'Banco de Dados', MB_OK + MB_ICONERROR );
+  end;
+end;
+
+function TConexao_IB.name: String;
+begin
+  Result := ibConexao.Name;
+end;
+
+procedure TConexao_IB.Commit(lQuery: TIBQuery);
+begin
+  with lQuery do
+  begin
+    Transaction.Commit;
+    Close;
+  end;
+end;
+
+constructor TConexao_IB.Create(nome, caminho : String);
+begin
+  //criando objeto de conexão e preparando os parametros
+  ibConexao := TIBDatabase.Create(nil);
+  ibConexao.Name := nome;
+  ibConexao.LoginPrompt := false;
+  ibConexao.DatabaseName := caminho;
+  ibConexao.Params.Clear;
+  ibConexao.Params.Add('user_name=SYSDBA');
+  ibConexao.Params.Add('password=online');
+  ibConexao.Params.Add('lc_ctype=NONE');
+  ibConexao.ServerType := 'IBServer';
+
+  //criando o objeto de transação com o banco
+  //ibTransaction := TIBTransaction.Create(Application);
+  //ibTransaction.DefaultDatabase := conexao;
+
+  //criando o objeto query de manipulação com o banco
+  //ibConexao.DefaultTransaction := ibTransaction;
+
+  //ibConexao.DefaultTransaction := ibQuery.Transaction;
+
+  //ibQuery.Transaction := createNewTransaction;
+
+//  ibQuery := TIBQuery.Create(Application);
+//  ibQuery.Database := conexao;
+//  ibQuery.Transaction := ibTransaction;
+end;
+
+function TConexao_IB.createNewQuery: TIBQuery;
+begin
+  Result := TIBQuery.Create(nil);
+  Result.UniDirectional := true;
+  Result.BufferChunks := 100;
+  Result.Database := ibConexao;
+  Result.Transaction := createNewTransaction();
+end;
+
+function TConexao_IB.createNewTransaction: TIBTransaction;
+begin
+  Result := TIBTransaction.Create(nil);
+  Result.DefaultDatabase := ibConexao;
+end;
+
+function TConexao_IB.abrir(): Boolean;
+var
+  query: TIBQuery;
+begin
+  try
+    with conexao do
+    begin
+      Open;
+      if not Connected then
+        Connected:= True;
+      Result := Connected;
+      {query := PoolDeConexoes.getConexao(_BD_IB_NFE).createNewQuery();
+      try
+        Result := Connected and verificaBD_Caixa(query);
+      finally
+        FreeAndNil(query);
+      end;}
+    end;
+  except
+    Application.MessageBox(PWideChar('Não foi possível realizar a conexão com a base remota ' + conexao.Name + #13 +
+                                     'Não é possível realizar quaisquer operação que necessite consulta à base remota' + #13 +
+                                     'como operações de venda em duplicata, consulta de limites de crédito, recebimentos, etc.' + #13 +
+                                     'Verifique as configurações do sistema.'),
+                                     'Erro - Falha de conexão com base de dados',
+                                     MB_OK + MB_ICONERROR);
+    Result:= False;
+  end;
+end;
+
+{function TConexao_IB.verificaBD_Caixa(lQuery: TIBQuery): Boolean;
+var
+  i, indiceBanco: Integer;
+  encontrou: Boolean;
+begin
+  indiceBanco := 0;
+  encontrou := false;
+  Result := false;
+  for i := 0 to Length(nomeBancosCaixa) - 1 do
+  begin
+    if nomeBancosCaixa[i]  = conexao.Name then
+    begin
+      indiceBanco := i;
+      encontrou := true;
+      Break;
+    end;
+  end;
+
+  if encontrou then
+  begin
+    with lQuery do
+    begin
+      close;
+      lQuery.SQL.Text := ' SELECT GEN_ID(id_caixa,0)' +
+                        ' FROM rdb$database';
+      Open;
+      Result := (not lQuery.IsEmpty) and (indiceBanco = FieldByName('gen_id').AsInteger);
+      Transaction.Commit;
+      Close;
+    end;
+  end;
+
+  if encontrou then
+  begin
+    if not Result then
+      Application.MessageBox(PWideChar('O banco encontrado no caminho: ' + #13 + #13 +
+                                       conexao.DatabaseName + #13 + #13 +
+                                       'configurado para o ' + Copy(conexao.Name, 1, Length(conexao.Name) - 3) + ' não corresponde a um ' + #13 +
+                                       'banco de dados valido para esse caixa.'),
+                                       'Erro - Configuração BD inválida',
+                                       MB_OK + MB_ICONERROR);
+  end;
+end;}
+
+function TConexao_IB.verificarCampoExistente(nomeTabela, nomeCampo: String): Boolean;
+var
+  query: TIBQuery;
+begin
+  query := TPool_BD_IB.GetInstance.getConexao(_BD_SOLUTION).createNewQuery();
+  try
+    with query do
+    begin
+      close;
+      query.SQL.Text := ' SELECT rdb$field_name' +
+                        ' FROM rdb$relation_fields' +
+                        ' WHERE RDB$RELATION_FIELDS.rdb$relation_name = ' + QuotedStr(nomeTabela) +
+                        ' AND RDB$RELATION_FIELDS.RDB$FIELD_NAME = ' + QuotedStr(nomeCampo);
+      Open;
+      Result := not query.IsEmpty;
+      Transaction.Commit;
+      Close;
+    end;
+  finally
+    FreeAndNil(query);
+  end;
+end;
+
+
+end.

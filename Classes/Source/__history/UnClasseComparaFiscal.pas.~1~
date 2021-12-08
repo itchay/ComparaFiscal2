@@ -1,0 +1,53 @@
+unit UnClasseComparaFiscal;
+
+interface
+
+uses
+  UnClasseLOG_Txt, UnClasseConfiguracao, UnClasseOferta, UnClasseVersao, Vcl.Forms;
+  //Forms, Windows, DB, IBDatabase, IBQuery, UnConstanteBD_IB, Generics.Collections;
+
+type
+  TComparaFiscal = class
+  private
+    oConfiguracao: TConfiguracao;
+    oNovaOferta: TOferta;
+    oLOG: TLOG_Txt;
+    oVersao: TVersao;
+
+  public
+    constructor Create();
+
+    property configuracao : TConfiguracao
+      read oConfiguracao
+      write oConfiguracao;
+    property novaOferta : TOferta
+      read oNovaOferta
+      write oNovaOferta;
+    property Log : TLOG_Txt
+      read oLOG
+      write oLOG;
+    property Versao : TVersao
+      read oVersao
+      write oVersao;
+
+  end;
+
+  var
+    oComparaFiscal : TComparaFiscal;
+
+implementation
+
+uses
+  System.SysUtils;
+
+{ TScanntech }
+
+constructor TComparaFiscal.Create();
+begin
+  oConfiguracao := TConfiguracao.Create();
+  oNovaOferta := TOferta.Create();
+  oLog := TLOG_Txt.Create(now, now, '', '');
+  oVersao := TVersao.Create(Application.ExeName);
+end;
+
+end.

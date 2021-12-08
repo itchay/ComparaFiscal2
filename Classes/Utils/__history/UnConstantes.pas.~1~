@@ -1,0 +1,11 @@
+unit UnConstantes;
+
+interface
+
+const
+  //banco de dados
+  _BD_COMPARA = 'Compara';
+
+implementation
+
+end.
