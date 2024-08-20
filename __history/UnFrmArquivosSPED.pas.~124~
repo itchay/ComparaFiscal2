@@ -586,6 +586,7 @@ begin
   //comportamento padrão caso não seja encontrado nenhum valor
   if oListaSPED.Count = 0 then
   begin
+    StgSPED.RowCount:= 2;
     LblQtdeC100Encontradas.Caption:= 'Nenhum Registro Encontrado';
     LblTotalC100Encontradas.Caption:= 'Valor Total: R$ 0,00';
     LblQtdeArquivos.Caption := IntToStr(oListaSPED.Count) + ' Arquivo(s)';
@@ -600,6 +601,9 @@ begin
   begin
     //selecionar cada arquivo da lista
     auxSPED := oListaSPED[y];
+    //adiciona linhas ao grid de acordo com a quantidade de notas de cada arquivo
+    if auxSPED.ListaRegistrosC100.Count <> 0 then
+      StgSPED.RowCount:= StgSPED.RowCount + auxSPED.ListaRegistrosC100.Count;
 
     for i:= 0 to auxSPED.ListaRegistrosC100.Count - 1 do
     begin
@@ -632,7 +636,6 @@ begin
     end;
   end;
 
-  StgSPED.RowCount:= StgSPED.RowCount + auxListaNotasSelecionadas.Count;
   for i:= 0 to auxListaNotasSelecionadas.Count - 1 do
   begin
     with StgSPED do

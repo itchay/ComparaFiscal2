@@ -539,7 +539,7 @@ end;
 //carregar notas da lista de ATF no grid
 procedure TFrmArquivosBaseDadosATF.carregaListaATFTela;
 var
-  i, y: Integer;
+  i, y, linhasOcultadas, auxRegistrosSelecionados, auxTotalRegistrosSelecionados: Integer;
   auxValor: double;
   auxQtde: integer;
   auxATF: TATF;
@@ -550,67 +550,77 @@ begin
   //limpa a grid
   limparGrid(StgATF, 2);
   auxValor:= 0;
-
+  auxTotalRegistrosSelecionados:= 0;
   //comportamento padrão caso não seja encontrado nenhum valor
   if oListaATF.Count = 0 then
   begin
+    StgATF.RowCount:= 2;
     LblQtdeEncontradas.Caption:= 'Nenhum Registro Encontrado';
     LblTotalEncontradas.Caption:= 'Valor Total: R$ 0,00';
-    LblQtdeArquivos.Caption := IntToStr(oListaATF.Count) + ' Arquivo(s)';
+    LblQtdeArquivos.Caption := IntToStr(oListaATF.Count) + '0 Arquivo(s)';
     exit;
   end;
-
-  //cria lista de notas selecionadas
-  auxListaNotasSelecionadas := TObjectList<TATF_Nota>.Create();
-
   //navega pela lista de arquivos
   for y := 0 to oListaATF.Count - 1 do
   begin
-    //selecionar cada arquivo da lista
-    auxATF := oListaATF[y];
-
-    for i:= 0 to auxATF.ListaNotas.Count - 1 do
-    begin
-      auxNota := auxATF.ListaNotas[i];
-      //filtra os resultados que serão exibidos na tela
-      if RadioTipoNF.ItemIndex = _TIPO_NF_ENTRADA then
-      begin
-        if auxATF.ListaNotas[i].TIPO_OPERACAO <> '0' then
-          continue;
-      end
-      else if RadioTipoNF.ItemIndex = _TIPO_NF_SAIDA then
-      begin
-        if auxATF.ListaNotas[i].TIPO_OPERACAO <> '1' then
-          continue;
-      end;
-
-      auxListaNotasSelecionadas.Add(auxNota);
-    end;
-  end;
-
-  StgATF.RowCount:= StgATF.RowCount + auxListaNotasSelecionadas.Count;
-  for i:= 0 to auxListaNotasSelecionadas.Count - 1 do
-  begin
     with StgATF do
     begin
-      Cells[1, i + 2]:= IntToStr(auxListaNotasSelecionadas[i].SERIE);
-      Cells[2, i + 2]:= IntToStr(auxListaNotasSelecionadas[i].Num_Doc);
-      Cells[3, i + 2]:= auxListaNotasSelecionadas[i].CHAVE_ACESSO;
-      Cells[4, i + 2]:= FormatDateTime('dd/mm/yyyy', auxListaNotasSelecionadas[i].DATA_EMISSAO);
+      //selecionar cada arquivo da lista
+      auxATF := oListaATF[y];
+      //adiciona linhas ao grid de acordo com a quantidade de notas de cada arquivo
+      if auxATF.ListaNotas.Count <> 0 then
+        StgATF.RowCount:= StgATF.RowCount + auxATF.ListaNotas.Count;
 
-      if auxListaNotasSelecionadas[i].TIPO_OPERACAO = '0' then
-        Cells[5, i + 2]:= 'Entrada'
-      else
-        Cells[5, i + 2]:= 'Saida';
+      //cria lista de notas selecionadas
+      auxListaNotasSelecionadas := TObjectList<TATF_Nota>.Create();
+      for i:= 0 to auxATF.ListaNotas.Count - 1 do
+      begin
+        auxNota := auxATF.ListaNotas[i];
 
-      Cells[6, i + 2]:= retiraCaractere('.',FloatToStrF(auxListaNotasSelecionadas[i].VALOR_TOTAL_NOTA, ffnumber, 15, 02));
+        //filtra os resultados que serão exibidos na tela
+        if RadioTipoNF.ItemIndex = _TIPO_NF_ENTRADA then
+        begin
+          if auxATF.ListaNotas[i].TIPO_OPERACAO = '0' then
+          begin
+            auxListaNotasSelecionadas.Add(auxNota);
+          end
+          else
+            StgATF.RowCount := StgATF.RowCount - 1;
+        end
+        else if RadioTipoNF.ItemIndex = _TIPO_NF_SAIDA then
+        begin
+          if auxATF.ListaNotas[i].TIPO_OPERACAO = '1' then
+          begin
+              auxListaNotasSelecionadas.Add(auxNota);
+          end
+          else
+            StgATF.RowCount := StgATF.RowCount - 1;
+        end;
+      end;
 
-      auxValor := auxValor + auxListaNotasSelecionadas[i].VALOR_TOTAL_NOTA;
+      for i:= 0 to auxListaNotasSelecionadas.Count - 1 do
+      begin
+        Cells[1, i + 2]:= IntToStr(auxListaNotasSelecionadas[i].SERIE);
+        Cells[2, i + 2]:= IntToStr(auxListaNotasSelecionadas[i].Num_Doc);
+        Cells[3, i + 2]:= auxListaNotasSelecionadas[i].CHAVE_ACESSO;
+        Cells[4, i + 2]:= FormatDateTime('dd/mm/yyyy', auxListaNotasSelecionadas[i].DATA_EMISSAO);
+
+        if auxListaNotasSelecionadas[i].TIPO_OPERACAO = '0' then
+          Cells[5, i + 2]:= 'Entrada'
+        else
+          Cells[5, i + 2]:= 'Saida';
+
+        Cells[6, i + 2]:= retiraCaractere('.',FloatToStrF(auxListaNotasSelecionadas[i].VALOR_TOTAL_NOTA, ffnumber, 15, 02));
+
+        auxValor := auxValor + auxListaNotasSelecionadas[i].VALOR_TOTAL_NOTA;
+      end;
+
+      auxTotalRegistrosSelecionados := auxTotalRegistrosSelecionados + auxListaNotasSelecionadas.Count;
     end;
   end;
 
   //atualiza informação de totais
-  LblQtdeEncontradas.Caption:= IntToStr(auxListaNotasSelecionadas.Count) + ' Registro(s) encontrada(s)';
+  LblQtdeEncontradas.Caption:= IntToStr(auxTotalRegistrosSelecionados) + ' Registro(s) encontrada(s)';
   LblQtdeArquivos.Caption := IntToStr(oListaATF.Count) + ' Arquivo(s)';
   LblTotalEncontradas.Caption:= 'Valor Total: R$ ' + FloatToStrF(auxValor,ffnumber,10,02);
 end;

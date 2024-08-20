@@ -88,7 +88,7 @@ implementation
 
 uses
   UnClasseUtils, UnClasseRegistroC100_Notas, UnClasseRegistro0150_Participante,
-  UnFrmListarSPED, UnClasseOrdenacaoStringGrid, UnClasseThread;
+  UnFrmListarSPED, UnClasseOrdenacaoStringGrid, UnClasseThread, UnClasseRegistroC100_Notas;
 
 Const
   _MODELO_NF_TODOS = 2;
@@ -586,6 +586,7 @@ begin
   //comportamento padrão caso não seja encontrado nenhum valor
   if oListaSPED.Count = 0 then
   begin
+    StgSPED.RowCount:= 2;
     LblQtdeC100Encontradas.Caption:= 'Nenhum Registro Encontrado';
     LblTotalC100Encontradas.Caption:= 'Valor Total: R$ 0,00';
     LblQtdeArquivos.Caption := IntToStr(oListaSPED.Count) + ' Arquivo(s)';
@@ -600,57 +601,34 @@ begin
   begin
     //selecionar cada arquivo da lista
     auxSPED := oListaSPED[y];
+    //adiciona linhas ao grid de acordo com a quantidade de notas de cada arquivo
+    if auxSPED.ListaRegistrosC100.Count <> 0 then
+      StgSPED.RowCount:= StgSPED.RowCount + auxSPED.ListaRegistrosC100.Count;
 
-    for i:= 0 to auxSPED.ListaRegistrosC100.Count - 1 do
+    for i:= 0 to StgSPED.ListaRegistrosC100.Count - 1 do
     begin
-      auxNota := auxSPED.ListaRegistrosC100[i];
 
-      //filtra os resultados na tela pelo modelo da nota
-      if CmbModelo.ItemIndex = _MODELO_NF_55 then
-      begin
-        if auxSPED.ListaRegistrosC100[i].Cod_Mod <> '55' then
-          continue;
-      end
-      else if CmbModelo.ItemIndex = _MODELO_NF_65 then
-      begin
-        if auxSPED.ListaRegistrosC100[i].Cod_Mod <> '65' then
-          continue;
-      end;
-      //filtra os resultados na tela pelo tipo de nota
-      if RadioTipoNF.ItemIndex = _TIPO_NF_ENTRADA then
-      begin
-        if auxSPED.ListaRegistrosC100[i].Ind_Oper <> '0' then
-          continue;
-      end
-      else if RadioTipoNF.ItemIndex = _TIPO_NF_SAIDA then
-      begin
-        if auxSPED.ListaRegistrosC100[i].Ind_Oper <> '1' then
-          continue;
-      end;
-
-      auxListaNotasSelecionadas.Add(auxNota);
     end;
   end;
 
-  StgSPED.RowCount:= StgSPED.RowCount + auxListaNotasSelecionadas.Count;
   for i:= 0 to auxListaNotasSelecionadas.Count - 1 do
   begin
     with StgSPED do
     begin
-      Cells[1, i + 2]:= auxListaNotasSelecionadas[i].Ser;
-      Cells[2, i + 2]:= auxListaNotasSelecionadas[i].Num_Doc;
-      Cells[3, i + 2]:= auxListaNotasSelecionadas[i].Chv_Nfe;
-      Cells[4, i + 2]:= converteFormatoData(auxListaNotasSelecionadas[i].Dt_Doc);
+      Cells[1, i + 2]:= auxSPED.ListaRegistrosC100[i].Ser;
+      Cells[2, i + 2]:= auxSPED.ListaRegistrosC100[i].Num_Doc;
+      Cells[3, i + 2]:= auxSPED.ListaRegistrosC100[i].Chv_Nfe;
+      Cells[4, i + 2]:= converteFormatoData(auxSPED.ListaRegistrosC100[i].Dt_Doc);
 
-      if auxListaNotasSelecionadas[i].Ind_Oper = '0' then
+      if auxSPED.ListaRegistrosC100[i].Ind_Oper = '0' then
         Cells[5, i + 2]:= 'Entrada'
       else
         Cells[5, i + 2]:= 'Saida';
 
-      Cells[6, i + 2]:= retiraCaractere('.',auxListaNotasSelecionadas[i].Vl_Doc);
+      Cells[6, i + 2]:= retiraCaractere('.',auxSPED.ListaRegistrosC100[i].Vl_Doc);
 
-      if auxListaNotasSelecionadas[i].Vl_Doc <> '' then
-        auxValor := auxValor + StrToFloat(auxListaNotasSelecionadas[i].Vl_Doc);
+      if auxSPED.ListaRegistrosC100[i].Vl_Doc <> '' then
+        auxValor := auxValor + StrToFloat(auxSPED.ListaRegistrosC100[i].Vl_Doc);
     end;
   end;
 
